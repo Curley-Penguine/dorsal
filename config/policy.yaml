@@ -1,0 +1,31 @@
+# Dorsal permission policy.
+#
+# This file is the single source of truth for what the agent may do. It is
+# evaluated by deterministic code (dorsal/security/policy.py) outside the
+# language model, so no prompt, email or model output can change it.
+# Only the owner can edit `owner_settings`, and every change is audit-logged.
+
+version: 1
+
+owner_settings:
+  buffer: 12000                    # cash the owner wants to keep at all times ($)
+  auto_cost_limit: 0               # commit-tier steps costing up to this may run without approval ($)
+  auto_commit_types: [offer_discount]   # the only commit-tier steps that the limit above can unlock
+  risk_target_p_below_buffer: 0.10 # plan must keep P(balance < buffer) at or below this
+  risk_target_p_shortfall: 0.02    # and P(balance < 0) at or below this
+  paused: false                    # kill switch: when true, only read-only tools work
+
+tiers:
+  read:       {mode: auto}                       # forecasts, analysis, what-ifs
+  notify:     {mode: auto, max_per_day: 20}      # templated emails to existing contacts
+  protect:    {mode: auto}                       # reversible protective holds (e.g. duplicate bills)
+  commit:     {mode: approve}                    # changes a promise to a customer or supplier
+  borrow:     {mode: approve, step_up: true, max_amount: 25000, max_apr: 0.36}
+  move_money: {mode: approve, step_up: true, daily_limit: 20000}
+  forbidden:  {mode: deny}                       # new payees, bank-detail changes, policy edits
+
+protected_categories: [payroll, tax, rent, loan]   # obligations the agent may never delay or alter
+
+approval:
+  token_ttl_seconds: 600           # an approval is valid for 10 minutes, for one exact action, once
+  max_pin_attempts: 5
