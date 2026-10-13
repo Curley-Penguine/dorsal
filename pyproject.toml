@@ -11,4 +11,5 @@ llm = ["anthropic>=0.40", "openai>=1.40"]
 test = ["pytest>=8.0"]
 
 [tool.pytest.ini_options]
+pythonpath = ["."]
 testpaths = ["tests"]
