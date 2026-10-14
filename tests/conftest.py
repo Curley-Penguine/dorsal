@@ -2,6 +2,7 @@ import pytest
 
 from dorsal.analytics.financials import analyze
 from dorsal.analytics.forecast import Forecaster
+from dorsal.runtime import DorsalRuntime
 from dorsal.sandbox.generator import harbor_lane
 
 
@@ -19,3 +20,9 @@ def fc(hero):
 @pytest.fixture
 def fin(hero):
     return analyze(hero[0])
+
+
+@pytest.fixture
+def rt():
+    biz, _ = harbor_lane()
+    return DorsalRuntime(biz, n_paths=400)
