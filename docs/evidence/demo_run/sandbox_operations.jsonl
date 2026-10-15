@@ -1,0 +1,21 @@
+{"ts": "2026-10-15T04:30:35+00:00", "system": "sandbox", "op": "ap.hold_placed", "bill_id": "B-904"}
+{"ts": "2026-10-15T04:30:35+00:00", "system": "sandbox", "op": "email.sent", "to": "ar@cascadepack.example", "subject": "Possible duplicate invoice CP-7781"}
+{"ts": "2026-10-15T04:30:35+00:00", "system": "sandbox", "op": "ar.reminder_logged", "invoice_id": "INV-1143"}
+{"ts": "2026-10-15T04:30:35+00:00", "system": "sandbox", "op": "email.sent", "to": "ap@fernwoodhotel.example", "subject": "Friendly reminder from Harbor Lane Coffee Roasters"}
+{"ts": "2026-10-15T04:30:35+00:00", "system": "sandbox", "op": "ar.reminder_logged", "invoice_id": "INV-1148"}
+{"ts": "2026-10-15T04:30:35+00:00", "system": "sandbox", "op": "email.sent", "to": "priya.raman@bluebirdcafes.example", "subject": "Friendly reminder from Harbor Lane Coffee Roasters"}
+{"ts": "2026-10-15T04:30:35+00:00", "system": "sandbox", "op": "ar.reminder_logged", "invoice_id": "INV-1152"}
+{"ts": "2026-10-15T04:30:35+00:00", "system": "sandbox", "op": "ar.reminder_logged", "invoice_id": "INV-1156"}
+{"ts": "2026-10-15T04:30:35+00:00", "system": "sandbox", "op": "email.sent", "to": "payables@northshoregrocers.example", "subject": "Friendly reminder from Harbor Lane Coffee Roasters"}
+{"ts": "2026-10-15T04:30:35+00:00", "system": "sandbox", "op": "ar.reminder_logged", "invoice_id": "INV-1154"}
+{"ts": "2026-10-15T04:30:35+00:00", "system": "sandbox", "op": "ar.reminder_logged", "invoice_id": "INV-1155"}
+{"ts": "2026-10-15T04:30:35+00:00", "system": "sandbox", "op": "email.sent", "to": "accounts@unionmarkethall.example", "subject": "Friendly reminder from Harbor Lane Coffee Roasters"}
+{"ts": "2026-10-15T04:30:35+00:00", "system": "sandbox", "op": "ap.rescheduled", "bill_id": "B-901", "payments": [["2026-11-20", 24000.0], ["2026-12-18", 24000.0]]}
+{"ts": "2026-10-15T04:30:35+00:00", "system": "sandbox", "op": "email.sent", "to": "billing@pacificgreen.example", "subject": "Split payment for PG-2291"}
+{"ts": "2026-10-15T04:30:35+00:00", "system": "sandbox", "op": "ap.rescheduled", "bill_id": "B-902", "payments": [["2027-01-09", 7600.0]]}
+{"ts": "2026-10-15T04:30:35+00:00", "system": "sandbox", "op": "email.sent", "to": "sales@northline-equip.example", "subject": "New delivery date for Q-4471"}
+{"ts": "2026-10-15T04:30:35+00:00", "system": "sandbox", "op": "ar.discount_offer_created", "invoice_id": "INV-1941", "pct": 0.025, "deadline": "2026-11-18", "pay_amount": 13845.0}
+{"ts": "2026-10-15T04:30:35+00:00", "system": "sandbox", "op": "email.sent", "to": "priya.raman@bluebirdcafes.example", "subject": "2.5% off INV-1941 if paid by Nov 18"}
+{"ts": "2026-10-15T04:30:35+00:00", "system": "sandbox", "op": "ar.discount_offer_created", "invoice_id": "INV-1164", "pct": 0.02, "deadline": "2026-10-28", "pay_amount": 2440.2}
+{"ts": "2026-10-15T04:30:35+00:00", "system": "sandbox", "op": "email.sent", "to": "ap@fernwoodhotel.example", "subject": "2% off INV-1164 if paid by Oct 28"}
+{"ts": "2026-10-15T04:30:35+00:00", "system": "sandbox", "op": "lending.drawn", "product_id": "flex-wc", "amount": 6000.0, "flows": [["2026-12-03", 6000.0], ["2027-02-10", -6111.16]]}
