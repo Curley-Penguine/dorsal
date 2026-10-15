@@ -1,0 +1,768 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Dorsal Cash Copilot</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@500;600;700&family=Source+Sans+3:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: operator console. Brief on top; forecast, plan and financing on the left; guardrails, alerts and the
+   hash-chained audit log on the right; analysis tabs and chat below. */
+:root {
+  --bg: #F1F3F6; --surface: #FFFFFF; --sunk: #E6EAF0; --ink: #111A26; --muted: #586579; --line: #D5DCE5;
+  --accent: #14365E; --accent-ink: #FFFFFF; --accent-soft: #DCE6F1; --base-line: #8A95A6;
+  --danger: #B3342B; --danger-soft: #F7E2DF; --warn: #9A6200; --warn-soft: #F5EAD2; --ok: #2C7440; --ok-soft: #DFEFE2;
+  --font-display: "Schibsted Grotesk", "Helvetica Neue", Arial, sans-serif;
+  --font-body: "Source Sans 3", "Segoe UI", system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+  --radius: 10px;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0B111A; --surface: #121A26; --sunk: #182233; --ink: #E4EAF2; --muted: #92A0B4; --line: #263347;
+    --accent: #7DB4F0; --accent-ink: #0B111A; --accent-soft: #16263D; --base-line: #6B788C;
+    --danger: #F0806F; --danger-soft: #3A1F1B; --warn: #E6B04E; --warn-soft: #382C14; --ok: #7DC98C; --ok-soft: #1B3221;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0B111A; --surface: #121A26; --sunk: #182233; --ink: #E4EAF2; --muted: #92A0B4; --line: #263347;
+  --accent: #7DB4F0; --accent-ink: #0B111A; --accent-soft: #16263D; --base-line: #6B788C;
+  --danger: #F0806F; --danger-soft: #3A1F1B; --warn: #E6B04E; --warn-soft: #382C14; --ok: #7DC98C; --ok-soft: #1B3221;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+img, svg { max-width: 100%; }
+body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--font-body); font-size: 15px; line-height: 1.5; }
+.wrap { max-width: 1240px; margin: 0 auto; padding-inline: 20px; padding-block: 18px 48px; display: grid; gap: 18px; }
+h1, h2, h3 { font-family: var(--font-display); margin: 0; text-wrap: balance; letter-spacing: -0.01em; }
+h2 { font-size: 17px; font-weight: 600; }
+h3 { font-size: 15px; font-weight: 600; }
+p { margin: 0; }
+.num { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+.eyebrow { font-size: 11.5px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); font-weight: 600; }
+.muted { color: var(--muted); }
+button { font: inherit; cursor: pointer; }
+button:disabled { cursor: not-allowed; opacity: .55; }
+button:focus-visible, select:focus-visible, input:focus-visible, summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+.top { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; }
+.brand { display: flex; align-items: center; gap: 12px; }
+.mark { width: 42px; height: 42px; border-radius: 10px; background: var(--accent); display: grid; place-items: center; flex: none; }
+.mark svg { width: 30px; height: 30px; }
+.brand h1 { font-size: 22px; font-weight: 700; }
+.brand small { display: block; color: var(--muted); font-size: 13px; }
+.tags { display: flex; flex-wrap: wrap; gap: 8px; }
+.tag-pill { font-size: 12.5px; color: var(--muted); border: 1px dashed var(--line); padding: 4px 10px; border-radius: 99px; white-space: nowrap; }
+.tag-pill b { color: var(--ink); font-weight: 600; }
+
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 18px 20px; display: grid; grid-template-columns: minmax(0, 1fr); gap: 14px; min-width: 0; }
+.panel > *, #tab-body > * { min-width: 0; }
+#tab-body { display: grid; gap: 16px; grid-template-columns: minmax(0, 1fr); }
+.panel-head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 8px; }
+.panel-head p { color: var(--muted); font-size: 13.5px; }
+
+.brief-head { display: flex; flex-wrap: wrap; gap: 10px 16px; align-items: center; justify-content: space-between; }
+.briefing { font-size: 16px; line-height: 1.55; max-width: 85ch; display: grid; gap: 8px; }
+.briefing p:first-child { font-size: 17.5px; }
+.stats { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); border-top: 1px solid var(--line); padding-top: 14px; }
+.stat { padding-inline: 14px; border-left: 1px solid var(--line); display: grid; gap: 2px; min-width: 0; }
+.stat:first-child { padding-left: 0; border-left: 0; }
+.stat .v { font-family: var(--font-mono); font-size: 21px; font-weight: 500; font-variant-numeric: tabular-nums; }
+.stat .v .arrow { color: var(--muted); font-size: 15px; padding-inline: 4px; }
+.stat .s { font-size: 12.5px; color: var(--muted); }
+.pill { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600; padding: 3px 10px; border-radius: 99px; white-space: nowrap; }
+.pill::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
+.pill.bad { color: var(--danger); background: var(--danger-soft); }
+.pill.warn { color: var(--warn); background: var(--warn-soft); }
+.pill.good { color: var(--ok); background: var(--ok-soft); }
+.neg { color: var(--danger); }
+.pos { color: var(--ok); }
+
+.main { display: grid; grid-template-columns: minmax(0, 1.75fr) minmax(0, 1fr); gap: 18px; align-items: start; }
+.col { display: grid; gap: 18px; min-width: 0; }
+
+.legend { display: flex; flex-wrap: wrap; gap: 14px; font-size: 13px; color: var(--muted); }
+.legend span { display: inline-flex; align-items: center; gap: 6px; }
+.sw { width: 18px; height: 0; border-top: 2.5px solid var(--accent); }
+.sw.band { height: 10px; border: 0; background: var(--accent); opacity: .22; border-radius: 2px; }
+.sw.base { border-top: 2px dashed var(--base-line); }
+.sw.buf { border-top: 1.5px dashed var(--warn); }
+.chart-box { position: relative; }
+svg.chart { width: 100%; height: auto; display: block; touch-action: pan-y; }
+.chart .grid { stroke: var(--line); stroke-width: 1; }
+.chart .zero { stroke: var(--muted); stroke-width: 1; }
+.chart .tick { fill: var(--muted); font-family: var(--font-mono); font-size: 11px; }
+.chart .zone { fill: var(--danger-soft); }
+.chart .buffer { stroke: var(--warn); stroke-width: 1.5; stroke-dasharray: 5 4; fill: none; }
+.chart .buflabel { fill: var(--warn); font-family: var(--font-body); font-size: 11.5px; font-weight: 600; }
+.chart .base { stroke: var(--base-line); stroke-width: 2; stroke-dasharray: 5 4; fill: none; }
+.chart .band { fill: var(--accent); opacity: .18; }
+.chart .plan { stroke: var(--accent); stroke-width: 2.5; fill: none; stroke-linejoin: round; }
+.chart .lowdot { fill: var(--surface); stroke-width: 2.5; }
+.chart .lowlabel { font-family: var(--font-mono); font-size: 11.5px; font-weight: 500; }
+.chart .guide { stroke: var(--muted); stroke-width: 1; }
+.chart .bar { fill: var(--accent); opacity: .75; }
+.tip { position: absolute; pointer-events: none; background: var(--ink); color: var(--bg); border-radius: 8px; padding: 8px 10px; font-size: 12.5px; line-height: 1.45; transform: translate(-50%, -100%); white-space: nowrap; z-index: 2; }
+.tip b { font-family: var(--font-mono); font-weight: 500; }
+.riskrow { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; border-top: 1px solid var(--line); padding-top: 12px; font-size: 13.5px; }
+.riskrow div { display: grid; gap: 2px; }
+.riskrow .num { font-size: 16px; }
+
+.section-label { display: flex; align-items: center; gap: 10px; }
+.section-label::after { content: ""; flex: 1; height: 1px; background: var(--line); }
+.steps { display: grid; gap: 10px; }
+.step { border: 1px solid var(--line); border-radius: 9px; padding: 14px 16px; display: grid; gap: 9px; }
+.step[data-status="approved"], .step[data-status="auto"] { background: var(--ok-soft); border-color: transparent; }
+.step[data-status="declined"] { opacity: .62; }
+.step-top { display: flex; flex-wrap: wrap; gap: 8px 12px; justify-content: space-between; align-items: flex-start; }
+.step-top h3 { flex: 1 1 260px; min-width: 0; font-size: 15.5px; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip-s { font-size: 12px; font-weight: 600; padding: 2px 9px; border-radius: 6px; white-space: nowrap; }
+.chip-s.tier { color: var(--muted); background: var(--sunk); text-transform: capitalize; }
+.chip-s.ask { color: var(--warn); background: var(--warn-soft); }
+.chip-s.auto { color: var(--ok); background: var(--surface); border: 1px solid var(--ok); }
+.chip-s.done { color: var(--ok); background: var(--surface); }
+.chip-s.no { color: var(--muted); background: var(--sunk); }
+.chip-s.pin { color: var(--danger); background: var(--danger-soft); }
+.facts { display: flex; flex-wrap: wrap; gap: 6px 18px; font-size: 13.5px; color: var(--muted); }
+.facts b { color: var(--ink); font-family: var(--font-mono); font-weight: 500; }
+.facts b.up { color: var(--ok); }
+.why { font-size: 14px; }
+details.draft { font-size: 13.5px; }
+details.draft summary { cursor: pointer; color: var(--accent); font-weight: 600; width: fit-content; }
+details.draft pre { margin: 8px 0 0; white-space: pre-wrap; font-family: var(--font-body); background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 12px; font-size: 13.5px; line-height: 1.5; overflow-wrap: anywhere; }
+.compact { display: grid; gap: 6px; }
+.compact-row { display: flex; gap: 10px; align-items: baseline; font-size: 14px; flex-wrap: wrap; }
+.compact-row .tick-ok { color: var(--ok); font-weight: 700; }
+.btns { display: flex; flex-wrap: wrap; gap: 8px; }
+.btn { border-radius: 8px; padding: 7px 14px; font-weight: 600; font-size: 14px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); }
+.btn:hover:not(:disabled) { border-color: var(--muted); }
+.btn.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+.btn.danger { color: var(--danger); border-color: var(--danger); background: transparent; }
+.btn.quiet { border-color: transparent; background: transparent; color: var(--muted); padding-inline: 8px; }
+
+.table-wrap { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; font-size: 14px; }
+th { text-align: left; font-size: 11.5px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); font-weight: 600; padding: 8px 10px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+td { padding: 9px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+td.r, th.r { text-align: right; }
+td .sub { color: var(--muted); font-size: 12.5px; }
+tr.rec td { background: var(--accent-soft); }
+.tag { font-size: 12px; font-weight: 600; padding: 2px 8px; border-radius: 6px; white-space: nowrap; display: inline-block; }
+.tag.bad { color: var(--danger); background: var(--danger-soft); }
+.tag.warn { color: var(--warn); background: var(--warn-soft); }
+.tag.ok { color: var(--ok); background: var(--ok-soft); }
+.tag.mute { color: var(--muted); background: var(--sunk); }
+
+.rule-row { display: grid; gap: 6px; }
+.rule-row label { font-weight: 600; font-size: 14px; }
+.hint { color: var(--muted); font-size: 13px; }
+select { font: inherit; font-size: 14px; padding: 6px 10px; border-radius: 8px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); width: 100%; }
+.tiers { display: grid; gap: 6px; border-top: 1px solid var(--line); padding-top: 12px; font-size: 13.5px; }
+.tier-row { display: grid; grid-template-columns: 96px minmax(0, 1fr); gap: 10px; align-items: baseline; }
+.tier-row b { font-family: var(--font-mono); font-size: 12px; font-weight: 500; text-transform: uppercase; }
+
+.alerts { display: grid; gap: 8px; }
+.alert { display: grid; grid-template-columns: 4px minmax(0, 1fr); gap: 12px; font-size: 14px; }
+.alert .stripe { border-radius: 4px; background: var(--muted); }
+.alert[data-sev="critical"] .stripe { background: var(--danger); }
+.alert[data-sev="warning"] .stripe { background: var(--warn); }
+.alert[data-sev="info"] .stripe { background: var(--line); }
+.alert p.d { color: var(--muted); font-size: 13.5px; }
+
+.log { list-style: none; margin: 0; padding: 0; display: grid; max-height: 420px; overflow-y: auto; }
+.log li { display: grid; grid-template-columns: 34px minmax(0, 1fr); gap: 10px; padding-block: 8px; border-top: 1px solid var(--line); font-size: 13px; }
+.log li:first-child { border-top: 0; }
+.log .seq { font-family: var(--font-mono); font-size: 12px; color: var(--muted); }
+.log .ev { font-family: var(--font-mono); font-size: 12px; }
+.log .h { font-family: var(--font-mono); font-size: 11px; color: var(--muted); }
+.chain { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; font-size: 13.5px; }
+
+.tabs { display: flex; flex-wrap: wrap; gap: 4px; background: var(--sunk); padding: 4px; border-radius: 9px; width: fit-content; max-width: 100%; }
+.tab { border: 0; background: transparent; color: var(--muted); padding: 6px 12px; border-radius: 7px; font-weight: 600; font-size: 14px; }
+.tab[aria-selected="true"] { background: var(--surface); color: var(--ink); }
+.kpis { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; }
+.kpi { display: grid; gap: 2px; padding: 12px; border-radius: 8px; background: var(--sunk); min-width: 0; }
+.kpi .v { font-family: var(--font-mono); font-size: 19px; }
+.kpi .s { font-size: 12.5px; color: var(--muted); }
+.mail { border: 1px solid var(--line); border-radius: 8px; padding: 12px 14px; display: grid; gap: 6px; font-size: 14px; }
+.mail[data-flag="true"] { border-color: var(--danger); }
+.mail pre { margin: 0; white-space: pre-wrap; font-family: var(--font-body); font-size: 13.5px; color: var(--muted); overflow-wrap: anywhere; }
+
+.chat-log { display: grid; gap: 10px; max-height: 440px; overflow-y: auto; }
+.msg { padding: 10px 14px; border-radius: 10px; font-size: 14.5px; max-width: 85%; white-space: pre-wrap; overflow-wrap: anywhere; }
+.msg.user { background: var(--accent); color: var(--accent-ink); justify-self: end; }
+.msg.bot { background: var(--sunk); justify-self: start; }
+.msg.note { background: transparent; color: var(--muted); font-size: 13px; padding: 0; }
+.chat-form { display: flex; gap: 8px; }
+.chat-form input, .modal input { flex: 1; min-width: 0; font: inherit; font-size: 15px; padding: 9px 12px; border-radius: 8px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); }
+.chip { border: 1px solid var(--line); background: var(--surface); color: var(--ink); border-radius: 99px; padding: 5px 12px; font-size: 13px; }
+.chip:hover { border-color: var(--muted); }
+.suggest { display: flex; flex-wrap: wrap; gap: 8px; }
+.attack-out { display: grid; gap: 8px; }
+.attack-row { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 4px 10px; font-size: 13.5px; }
+.attack-row .x { width: 20px; height: 20px; border-radius: 50%; background: var(--danger-soft); color: var(--danger); display: grid; place-items: center; font-weight: 700; font-size: 12px; margin-top: 1px; }
+
+.backdrop { position: fixed; inset: 0; background: rgba(10, 16, 15, .45); display: grid; place-items: center; padding: 16px; z-index: 20; }
+.modal { background: var(--surface); border-radius: 12px; padding: 20px; width: min(420px, 100%); display: grid; gap: 12px; border: 1px solid var(--line); }
+.toast { position: fixed; left: 50%; bottom: calc(20px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); background: var(--ink); color: var(--bg); padding: 10px 16px; border-radius: 9px; font-size: 14px; max-width: calc(100% - 32px); z-index: 30; }
+.banner { background: var(--danger-soft); color: var(--danger); border-radius: 9px; padding: 10px 14px; font-weight: 600; font-size: 14px; }
+footer { color: var(--muted); font-size: 13px; text-align: center; }
+
+@media (max-width: 980px) {
+  .main { grid-template-columns: minmax(0, 1fr); }
+  .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); row-gap: 14px; }
+  .stat:nth-child(odd) { padding-left: 0; border-left: 0; }
+  .kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 480px) {
+  .wrap { padding-inline: 16px; }
+  .panel { padding: 16px; }
+  .stat .v { font-size: 18px; }
+  .riskrow { grid-template-columns: minmax(0, 1fr); }
+}
+@media (prefers-reduced-motion: no-preference) { .step { transition: background-color .25s ease, opacity .25s ease; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div class="brand">
+      <div class="mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M6.5 16.5C9 12.5 11.5 7.5 16 3c-.9 4.6-.4 9.2 2 13.5z" fill="var(--accent-ink)"/><path d="M2 18.5l4.5-1.6 4 1.9 5-2.4 6.5 1.3" stroke="var(--accent-ink)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+      <div><h1>Dorsal</h1><small id="biz-line">Cash-flow copilot</small></div>
+    </div>
+    <div class="tags" id="tags"></div>
+  </header>
+
+  <div id="paused-banner" class="banner" hidden>Dorsal is paused. It will not send, hold, offer or borrow anything until you resume it.</div>
+
+  <section class="panel" aria-labelledby="brief-h">
+    <div class="brief-head">
+      <span class="eyebrow" id="brief-h">This morning's brief</span>
+      <span id="status-pill" class="pill"></span>
+    </div>
+    <div class="briefing" id="briefing"><p class="muted">Loading the forecast…</p></div>
+    <div class="stats">
+      <div class="stat"><span class="eyebrow">Cash today</span><span class="v" id="s-cash">–</span><span class="s" id="s-cash-sub"></span></div>
+      <div class="stat"><span class="eyebrow">Chance of running out</span><span class="v" id="s-risk">–</span><span class="s">next 13 weeks, before → now</span></div>
+      <div class="stat"><span class="eyebrow">Typical low point</span><span class="v" id="s-low">–</span><span class="s" id="s-low-date"></span></div>
+      <div class="stat"><span class="eyebrow">Health score</span><span class="v" id="s-health">–</span><span class="s" id="s-health-sub"></span></div>
+      <div class="stat"><span class="eyebrow">Waiting on you</span><span class="v" id="s-pending">–</span><span class="s" id="s-pending-sub"></span></div>
+    </div>
+  </section>
+
+  <div class="main">
+    <div class="col">
+      <section class="panel" aria-labelledby="fc-h">
+        <div class="panel-head">
+          <div><h2 id="fc-h">13-week cash forecast</h2><p>1,000 simulated futures. The band covers 8 in 10 of them.</p></div>
+          <div class="legend">
+            <span><i class="sw"></i>Typical (P50)</span><span><i class="sw band"></i>P10–P90</span>
+            <span><i class="sw base"></i>Before Dorsal's plan</span><span><i class="sw buf"></i>Buffer</span>
+          </div>
+        </div>
+        <div class="chart-box" id="chart-box">
+          <svg id="chart" class="chart" viewBox="0 0 760 300" role="img" aria-label="Cash forecast fan chart"></svg>
+          <div class="tip" id="tip" hidden></div>
+        </div>
+        <div class="riskrow" id="riskrow"></div>
+      </section>
+
+      <section class="panel" aria-labelledby="plan-h">
+        <div class="panel-head">
+          <div><h2 id="plan-h">Dorsal's plan</h2><p id="plan-sub"></p></div>
+        </div>
+        <div class="steps" id="steps"></div>
+      </section>
+
+      <section class="panel" aria-labelledby="fin-h">
+        <div class="panel-head">
+          <div><h2 id="fin-h">Financing options</h2><p id="fin-sub">Every product priced on its true annual cost, computed from its cash flows</p></div>
+        </div>
+        <div class="table-wrap" id="fin-table"></div>
+      </section>
+    </div>
+
+    <div class="col">
+      <section class="panel" aria-labelledby="g-h">
+        <div class="panel-head"><div><h2 id="g-h">Guardrails</h2><p>You set these. The agent cannot change them.</p></div></div>
+        <div class="rule-row">
+          <label for="buffer">Keep at least this much cash</label>
+          <select id="buffer"><option value="8000">$8,000</option><option value="12000">$12,000</option><option value="20000">$20,000</option></select>
+          <span class="hint" id="buffer-hint"></span>
+        </div>
+        <div class="rule-row">
+          <label for="autolimit">Dorsal may offer discounts on its own when they cost up to</label>
+          <select id="autolimit"><option value="0">$0 (always ask me)</option><option value="300">$300</option><option value="1000">$1,000</option></select>
+        </div>
+        <div class="tiers" id="tiers"></div>
+        <div class="btns">
+          <button class="btn danger" id="pause" type="button">Pause Dorsal</button>
+          <button class="btn" id="attack" type="button">Run attack simulation</button>
+        </div>
+        <div class="attack-out" id="attack-out"></div>
+      </section>
+
+      <section class="panel" aria-labelledby="al-h">
+        <div class="panel-head"><div><h2 id="al-h">Alerts</h2></div></div>
+        <div class="alerts" id="alerts"></div>
+      </section>
+
+      <section class="panel" aria-labelledby="au-h">
+        <div class="panel-head"><div><h2 id="au-h">Audit log</h2><p>Hash-chained: editing any entry breaks the chain</p></div></div>
+        <div class="chain"><span id="chain-status" class="tag mute">Not checked</span><button class="btn" id="verify" type="button">Verify chain</button></div>
+        <ul class="log" id="log"></ul>
+      </section>
+    </div>
+  </div>
+
+  <section class="panel" aria-labelledby="an-h">
+    <div class="panel-head">
+      <h2 id="an-h">Business analysis</h2>
+      <div class="tabs" role="tablist" id="tabs">
+        <button class="tab" role="tab" data-tab="health" aria-selected="true">Health</button>
+        <button class="tab" role="tab" data-tab="ar" aria-selected="false">Customers owe you</button>
+        <button class="tab" role="tab" data-tab="ap" aria-selected="false">You owe</button>
+        <button class="tab" role="tab" data-tab="inbox" aria-selected="false">Inbox</button>
+        <button class="tab" role="tab" data-tab="outbox" aria-selected="false">Sent by Dorsal</button>
+      </div>
+    </div>
+    <div id="tab-body"></div>
+  </section>
+
+  <section class="panel" aria-labelledby="chat-h">
+    <div class="panel-head"><div><h2 id="chat-h">Ask Dorsal</h2><p>Dorsal can explain and run what-ifs. Only you can approve a step.</p></div></div>
+    <div class="chat-log" id="chat-log" aria-live="polite"></div>
+    <div class="suggest" id="suggest">
+      <button class="chip" type="button">Why am I short in November?</button>
+      <button class="chip" type="button">What if Bluebird pays 3 weeks late?</button>
+      <button class="chip" type="button">Which financing is cheapest?</button>
+      <button class="chip" type="button">How is the business doing?</button>
+    </div>
+    <form class="chat-form" id="chat-form">
+      <input id="chat-input" type="text" placeholder="Ask about cash, customers, financing or the plan" autocomplete="off" aria-label="Ask Dorsal">
+      <button class="btn primary" type="submit" id="chat-send">Ask</button>
+    </form>
+  </section>
+
+  <footer id="footer">Prototype for the 2026 Shenzhen FinTechathon, Topic E. All businesses, lenders and people are fictional; bank, email and lender connections are sandboxed.</footer>
+</div>
+<div class="toast" id="toast" role="status" hidden></div>
+<div class="backdrop" id="pin-modal" hidden>
+  <form class="modal" id="pin-form">
+    <h2>Confirm with your PIN</h2>
+    <p class="muted" id="pin-what"></p>
+    <input id="pin" type="password" inputmode="numeric" autocomplete="off" placeholder="Owner PIN" aria-label="Owner PIN">
+    <p class="hint">Sandbox PIN: 2468</p>
+    <p class="neg" id="pin-err" hidden></p>
+    <div class="btns"><button class="btn primary" type="submit">Approve</button><button class="btn" type="button" id="pin-cancel">Cancel</button></div>
+  </form>
+</div>
+
+<script>
+(() => {
+  const $ = (id) => document.getElementById(id);
+  const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+  const money = (n) => n == null ? "–" : (n < 0 ? "−$" : "$") + Math.abs(Math.round(n)).toLocaleString("en-US");
+  const kmoney = (n) => (n < 0 ? "−$" : "$") + Math.round(Math.abs(n) / 1000) + "k";
+  const pct = (p) => p == null ? "–" : (p > 0.99 ? ">99%" : p > 0 && p < 0.01 ? "<1%" : Math.round(p * 100) + "%");
+  const MON = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+  const WD = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+  const pd = (s) => { const [y, m, d] = s.slice(0, 10).split("-").map(Number); return new Date(y, m - 1, d); };
+  const fmtD = (s) => { if (!s) return "–"; const d = pd(s); return MON[d.getMonth()] + " " + d.getDate(); };
+  const fmtDW = (s) => { if (!s) return "–"; const d = pd(s); return WD[d.getDay()] + " " + fmtD(s); };
+
+  // ------------------------------------------------------------------ data adapters
+  const BUNDLE = window.DORSAL_BUNDLE || null;
+  const live = {
+    mode: "live",
+    async call(method, url, body) {
+      const r = await fetch(url, { method, headers: { "Content-Type": "application/json" }, body: body ? JSON.stringify(body) : undefined });
+      const j = await r.json().catch(() => ({}));
+      if (!r.ok) throw new Error(j.detail || "Request failed");
+      return j;
+    },
+    state() { return this.call("GET", "/api/state"); },
+    review() { return this.call("POST", "/api/review"); },
+    approve(id, pin) { return this.call("POST", `/api/actions/${encodeURIComponent(id)}/approve`, { pin }); },
+    decline(id) { return this.call("POST", `/api/actions/${encodeURIComponent(id)}/decline`); },
+    settings(ch) { return this.call("POST", "/api/settings", ch); },
+    async chat(q) { return (await this.call("POST", "/api/chat", { question: q })).answer; },
+    attack() { return this.call("POST", "/api/attack"); },
+    verify() { return this.call("GET", "/api/audit/verify"); },
+  };
+  const stat = BUNDLE && (() => {
+    // Hosted demo: every state below was produced by the real engine (`python -m dorsal export-demo`).
+    const approved = new Set(), declined = new Set();
+    let autoLimit = 0, paused = false, extraLog = [];
+    const keyOf = () => [...approved].sort().join("|");
+    const pick = () => {
+      const base = BUNDLE.states[keyOf()] || BUNDLE.states[""];
+      const st = JSON.parse(JSON.stringify(base));
+      st.settings.auto_cost_limit = autoLimit; st.settings.paused = paused;
+      for (const s of st.plan.steps) {
+        if (declined.has(s.id)) s.status = "declined";
+        if (approved.has(s.id) && s.type === "offer_discount" && s.cost <= autoLimit && BUNDLE.auto_eligible.includes(s.id)) s.status = "auto";
+      }
+      st.audit.entries = st.audit.entries.concat(extraLog);
+      return st;
+    };
+    const note = (event, data) => extraLog.push({ seq: "·", event, actor: "owner", data, hash: "(demo only)" });
+    const applyLimit = () => { for (const id of BUNDLE.auto_eligible) { const s = BUNDLE.states[""].plan.steps.find((x) => x.id === id); if (s && s.cost <= autoLimit && !declined.has(id)) approved.add(id); } };
+    return {
+      mode: "static",
+      async state() { return pick(); }, async review() { return pick(); },
+      async approve(id, pin) {
+        const s = BUNDLE.states[""].plan.steps.find((x) => x.id === id);
+        if (paused) throw new Error("Dorsal is paused.");
+        if (s && s.step_up && pin !== "2468") throw new Error("PIN is incorrect");
+        approved.add(id); declined.delete(id); return pick();
+      },
+      async decline(id) { declined.add(id); approved.delete(id); note("approval.declined", { action_id: id }); return pick(); },
+      async settings(ch) {
+        if ("auto_cost_limit" in ch) { autoLimit = Number(ch.auto_cost_limit); note("policy.settings_changed", { auto_cost_limit: autoLimit }); if (!paused) applyLimit(); }
+        if ("paused" in ch) { paused = !!ch.paused; note("policy.settings_changed", { paused }); }
+        if ("buffer" in ch) throw new Error("Changing the buffer re-runs the optimiser. Run the full app locally to try it.");
+        return pick();
+      },
+      async chat(q) {
+        if (BUNDLE.chat[q]) return BUNDLE.chat[q];
+        const sample = window.claude && window.claude.use ? await window.claude.use("sample").catch(() => null) : null;
+        if (!sample) return "In this hosted demo I can answer the suggested questions. Run Dorsal locally (python -m dorsal serve) to ask anything.";
+        const st = pick();
+        const ctx = { business: st.business, forecast_now: st.current.summary, before_plan: st.baseline.summary,
+          plan: st.plan.steps.map((s) => ({ title: s.title, status: s.status, cost: s.cost, impact: s.impact })),
+          alerts: st.alerts.map((a) => a.title), financing: st.financing.slice(0, 5).map((q) => ({ name: q.name, total_cost: q.total_cost, apr: q.apr, verdict: q.verdict })),
+          health: st.analysis.health };
+        const { text } = await sample("You are Dorsal, a cash-flow copilot for a small business. Answer in under 120 words using exact figures from this JSON. You cannot approve or move money; only the owner can approve steps. Never suggest delaying payroll or tax.\n\nDATA:\n" + JSON.stringify(ctx) + "\n\nQUESTION: " + q, { modelTier: "quick", cache: false });
+        return text;
+      },
+      async attack() { return { attempts: BUNDLE.attack, state: pick() }; },
+      async verify() { return BUNDLE.states[keyOf()]?.audit.verify || BUNDLE.states[""].audit.verify; },
+    };
+  })();
+  const api = stat || live;
+
+  // ------------------------------------------------------------------ state + render
+  let S = null;
+  let tab = "health";
+  let toastT;
+  const toast = (m) => { const t = $("toast"); t.textContent = m; t.hidden = false; clearTimeout(toastT); toastT = setTimeout(() => (t.hidden = true), 3400); };
+
+  function render() {
+    if (!S) return;
+    const b = S.business, cur = S.current.summary, base = S.baseline.summary;
+    $("biz-line").textContent = `Cash-flow copilot · ${b.name}`;
+    $("tags").innerHTML = `<span class="tag-pill">${esc(b.industry)} · <b>${fmtDW(b.today)}</b></span>` +
+      `<span class="tag-pill">${api.mode === "static" ? "Hosted demo · states computed by the engine" : "Live sandbox"}</span>` +
+      `<span class="tag-pill">Model: <b>${esc(S.provider)}</b></span>`;
+    $("paused-banner").hidden = !S.settings.paused;
+    $("pause").textContent = S.settings.paused ? "Resume Dorsal" : "Pause Dorsal";
+    renderBrief(cur, base);
+    renderChart();
+    renderPlan();
+    renderFinancing();
+    renderGuardrails();
+    renderAlerts();
+    renderAudit();
+    renderTab();
+  }
+
+  function renderBrief(cur, base) {
+    const pill = $("status-pill");
+    const pBuf = cur.p_below_buffer;
+    if (cur.p_shortfall >= 0.2) { pill.className = "pill bad"; pill.textContent = "Shortfall likely"; }
+    else if (pBuf > S.plan.targets.max_p_below_buffer + 0.02) { pill.className = "pill warn"; pill.textContent = "Below buffer risk"; }
+    else { pill.className = "pill good"; pill.textContent = "Covered"; }
+    const br = S.briefing ? S.briefing.split(/\n\n+/) : ["Dorsal has not run its morning review yet."];
+    $("briefing").innerHTML = br.map((p) => `<p>${esc(p)}</p>`).join("");
+    $("s-cash").textContent = money(S.business.cash);
+    $("s-cash-sub").textContent = "synced 6:00 AM";
+    $("s-risk").innerHTML = `<span class="${base.p_shortfall >= .2 ? "neg" : ""}">${pct(base.p_shortfall)}</span><span class="arrow">→</span><span class="${cur.p_shortfall >= .2 ? "neg" : "pos"}">${pct(cur.p_shortfall)}</span>`;
+    const low = $("s-low"); low.textContent = money(cur.median_low); low.className = "v " + (cur.median_low < 0 ? "neg" : "");
+    $("s-low-date").textContent = `${fmtDW(cur.median_low_date)} · bad case ${money(cur.p10_low)}`;
+    $("s-health").textContent = S.analysis.health.score + "/100";
+    $("s-health-sub").textContent = S.analysis.health.reasons[0] ? "Main issue: low cash days" : "No major issues";
+    const pend = S.plan.steps.filter((s) => s.status === "pending").length;
+    $("s-pending").textContent = String(pend);
+    $("s-pending-sub").textContent = pend ? "steps need approval" : "nothing waiting";
+  }
+
+  function renderChart() {
+    const W = 760, H = 300, L = 60, R = 14, T = 16, B = 30;
+    const c = S.current.curves, bc = S.baseline.curves, n = S.dates.length, buf = S.settings.buffer;
+    const all = c.p10.concat(c.p90, bc.p50, [0, buf]);
+    const step = 20000;
+    const mn = Math.floor(Math.min(...all) / step) * step, mx = Math.ceil(Math.max(...all) / step) * step;
+    const x = (i) => L + (i / (n - 1)) * (W - L - R);
+    const y = (v) => T + (1 - (v - mn) / (mx - mn)) * (H - T - B);
+    let s = `<rect class="zone" x="${L}" y="${y(0)}" width="${W - L - R}" height="${Math.max(0, y(mn) - y(0))}"/>`;
+    for (let v = mn; v <= mx; v += step) {
+      s += `<line class="${v === 0 ? "zero" : "grid"}" x1="${L}" x2="${W - R}" y1="${y(v)}" y2="${y(v)}"/>`;
+      s += `<text class="tick" x="${L - 8}" y="${y(v) + 4}" text-anchor="end">${kmoney(v)}</text>`;
+    }
+    for (let i = 0; i < n; i += 14) s += `<text class="tick" x="${x(i)}" y="${H - 8}" text-anchor="${i === 0 ? "start" : "middle"}">${fmtD(S.dates[i])}</text>`;
+    const path = (a) => a.map((v, i) => (i ? "L" : "M") + x(i).toFixed(1) + " " + y(v).toFixed(1)).join("");
+    let band = c.p90.map((v, i) => (i ? "L" : "M") + x(i).toFixed(1) + " " + y(v).toFixed(1)).join("");
+    for (let i = n - 1; i >= 0; i--) band += "L" + x(i).toFixed(1) + " " + y(c.p10[i]).toFixed(1);
+    s += `<path class="band" d="${band}Z"/>`;
+    const same = c.p50.every((v, i) => Math.abs(v - bc.p50[i]) < 5);
+    if (!same) s += `<path class="base" d="${path(bc.p50)}"/>`;
+    s += `<line class="buffer" x1="${L}" x2="${W - R}" y1="${y(buf)}" y2="${y(buf)}"/>`;
+    s += `<text class="buflabel" x="${W - R}" y="${y(buf) - 5}" text-anchor="end">Buffer ${kmoney(buf)}</text>`;
+    s += `<path class="plan" d="${path(c.p50)}"/>`;
+    let li = 3; for (let i = 3; i < n; i++) if (c.p50[i] < c.p50[li]) li = i;
+    const lv = c.p50[li], col = lv < 0 ? "var(--danger)" : lv < buf ? "var(--warn)" : "var(--accent)";
+    s += `<circle class="lowdot" cx="${x(li)}" cy="${y(lv)}" r="5" stroke="${col}"/>`;
+    const anchor = x(li) > W - 170 ? "end" : x(li) < L + 110 ? "start" : "middle";
+    const ty = y(lv) + 20 > H - B - 2 ? y(lv) - 12 : y(lv) + 20;
+    s += `<text class="lowlabel" x="${x(li)}" y="${ty}" text-anchor="${anchor}" fill="${col}">Typical low ${money(lv)} · ${fmtD(S.dates[li])}</text>`;
+    s += `<line class="guide" id="guide" x1="0" x2="0" y1="${T}" y2="${H - B}" visibility="hidden"/>`;
+    s += `<rect id="hit" x="${L}" y="${T}" width="${W - L - R}" height="${H - T - B}" fill="transparent"/>`;
+    const svg = $("chart"); svg.innerHTML = s;
+    const hit = $("hit"), guide = $("guide"), tip = $("tip"), box = $("chart-box");
+    const move = (cx) => {
+      const r = svg.getBoundingClientRect();
+      const i = Math.max(0, Math.min(n - 1, Math.round((((cx - r.left) / r.width) * W - L) / (W - L - R) * (n - 1))));
+      guide.setAttribute("x1", x(i)); guide.setAttribute("x2", x(i)); guide.setAttribute("visibility", "visible");
+      tip.hidden = false;
+      tip.innerHTML = `${fmtDW(S.dates[i])}<br>Typical <b>${money(c.p50[i])}</b><br>Range <b>${money(c.p10[i])}</b> to <b>${money(c.p90[i])}</b>` +
+        (same ? "" : `<br>Before plan <b>${money(bc.p50[i])}</b>`) + `<br>Chance below $0 <b>${pct(c.p_below_zero[i])}</b>`;
+      const bx = box.getBoundingClientRect();
+      tip.style.left = Math.max(90, Math.min(bx.width - 90, (x(i) / W) * r.width + (r.left - bx.left))) + "px";
+      tip.style.top = Math.max(96, (y(c.p90[i]) / H) * r.height - 8) + "px";
+    };
+    hit.addEventListener("pointermove", (e) => move(e.clientX));
+    hit.addEventListener("pointerdown", (e) => move(e.clientX));
+    hit.addEventListener("pointerleave", () => { tip.hidden = true; guide.setAttribute("visibility", "hidden"); });
+    const cur = S.current.summary, base = S.baseline.summary;
+    $("riskrow").innerHTML =
+      `<div><span class="eyebrow">Chance below $0</span><span class="num">${pct(base.p_shortfall)} → ${pct(cur.p_shortfall)}</span></div>` +
+      `<div><span class="eyebrow">Chance below buffer</span><span class="num">${pct(base.p_below_buffer)} → ${pct(cur.p_below_buffer)}</span></div>` +
+      `<div><span class="eyebrow">Avg. depth below buffer</span><span class="num">${money(base.expected_deficit)} → ${money(cur.expected_deficit)}</span></div>`;
+  }
+
+  const STATUS_ORDER = { pending: 0, approved: 1, auto: 2, declined: 3, denied: 4, not_proposed: 5 };
+  function renderPlan() {
+    const steps = S.plan.steps.slice().sort((a, b) => (STATUS_ORDER[a.status] ?? 9) - (STATUS_ORDER[b.status] ?? 9));
+    const after = S.plan.after;
+    $("plan-sub").textContent = `Cheapest set of steps that keeps the chance of dipping below your buffer at or under ${pct(S.plan.targets.max_p_below_buffer)}. ` +
+      `With all steps: ${pct(after.p_below_buffer)}, expected cost ${money(S.plan.total_expected_cost)}.`;
+    const host = $("steps"); host.innerHTML = "";
+    const reminders = steps.filter((s) => s.type === "send_reminder");
+    const main = steps.filter((s) => s.type !== "send_reminder");
+    for (const s of main) host.appendChild(stepCard(s));
+    if (reminders.length) {
+      const done = reminders.filter((r) => r.status === "auto" || r.status === "approved").length;
+      const box = document.createElement("div"); box.className = "step"; box.dataset.status = done === reminders.length ? "auto" : "pending";
+      box.innerHTML = `<div class="step-top"><h3>Payment reminders to ${reminders.length} customers</h3><div class="chips"><span class="chip-s tier">notify</span>${done === reminders.length ? '<span class="chip-s auto">Done automatically</span>' : '<span class="chip-s ask">Partly pending</span>'}</div></div>
+        <p class="why">Free, polite and only to existing contacts, so your rules let Dorsal send them. Each email lists only that customer's invoices.</p>
+        <div class="compact">${reminders.map((r) => `<div class="compact-row"><span class="tick-ok">${r.status === "auto" || r.status === "approved" ? "✓" : "•"}</span><span>${esc(r.title)}</span></div>`).join("")}</div>
+        <details class="draft"><summary>Read one of the emails</summary><pre>${esc(reminders[0].draft)}</pre></details>`;
+      host.appendChild(box);
+    }
+    const blocked = S.blocked || [];
+    if (blocked.length) {
+      const d = document.createElement("div");
+      d.className = "compact";
+      d.innerHTML = `<span class="eyebrow">Refused by the policy engine</span>` + blocked.map((x) =>
+        `<div class="attack-row"><span class="x" aria-hidden="true">×</span><p>${esc(x.title)}<br><span class="muted">${esc(x.reasons.join(" "))} <span class="num">${esc(x.rules.join(", "))}</span></span></p></div>`).join("");
+      host.appendChild(d);
+    }
+  }
+
+  function stepCard(s) {
+    const el = document.createElement("article"); el.className = "step"; el.dataset.status = s.status;
+    let chip = "";
+    if (s.status === "auto") chip = '<span class="chip-s auto">Done automatically</span>';
+    else if (s.status === "approved") chip = '<span class="chip-s done">Approved by you</span>';
+    else if (s.status === "declined") chip = '<span class="chip-s no">Declined</span>';
+    else if (s.status === "denied") chip = '<span class="chip-s pin">Refused by policy</span>';
+    else if (s.status === "pending") chip = s.step_up ? '<span class="chip-s pin">Needs approval + PIN</span>' : '<span class="chip-s ask">Needs your approval</span>';
+    else chip = '<span class="chip-s no">Not yet proposed</span>';
+    const imp = s.impact;
+    const gain = imp ? imp.expected_deficit_gain : null;
+    el.innerHTML = `<div class="step-top"><h3>${esc(s.title)}</h3><div class="chips"><span class="chip-s tier">${esc(s.tier.replace("_", " "))}</span>${chip}</div></div>
+      <div class="facts">
+        <span>Expected cost <b>${money(s.cost)}</b></span>
+        ${imp ? `<span>Shortfall depth cut <b class="up">${money(gain)}</b></span><span>Without it, chance below buffer <b>${pct(imp.p_below_buffer_without)}</b></span>` : ""}
+      </div>
+      <p class="why">${esc(s.rationale)}</p>
+      ${s.draft ? `<details class="draft"><summary>${s.type === "draw_financing" ? "See the request" : "Read what Dorsal will send"}</summary><pre>${esc(s.draft)}</pre></details>` : ""}
+      <div class="btns"></div>`;
+    const btns = el.querySelector(".btns");
+    const mk = (label, cls, fn) => { const bt = document.createElement("button"); bt.type = "button"; bt.className = "btn " + cls; bt.textContent = label; bt.disabled = !!S.settings.paused; bt.addEventListener("click", fn); btns.appendChild(bt); };
+    if (s.status === "pending") {
+      mk(s.step_up ? "Approve with PIN" : (s.type === "draw_financing" ? "Approve draw" : "Approve and send"), "primary", () => approve(s));
+      mk("Decline", "", () => run(() => api.decline(s.id), "Declined."));
+    }
+    return el;
+  }
+
+  function renderFinancing() {
+    const qs = S.financing || [];
+    const chosen = S.plan.steps.find((s) => s.type === "draw_financing");
+    $("fin-sub").textContent = chosen ? `Dorsal's pick for the remaining gap: ${chosen.title}.` : "No borrowing is needed with the current plan. Quotes shown for reference.";
+    $("fin-table").innerHTML = `<table><thead><tr><th>Product</th><th class="r">Amount</th><th class="r">Total cost</th><th class="r">True APR</th><th>Funds</th><th>Verdict</th></tr></thead><tbody>` +
+      qs.map((q) => {
+        const tag = q.recommended ? '<span class="tag ok">Best</span>' : q.high_cost ? '<span class="tag bad">High cost</span>' : !q.eligible ? '<span class="tag mute">Not eligible</span>' : !q.arrives_in_time ? '<span class="tag warn">Too slow</span>' : '<span class="tag mute">Option</span>';
+        return `<tr class="${q.recommended ? "rec" : ""}"><td>${esc(q.name)}<div class="sub">${esc(q.lender)}</div></td><td class="r num">${money(q.amount)}</td>
+          <td class="r num">${q.total_cost == null ? "–" : money(q.total_cost)}</td><td class="r num">${q.apr == null ? "–" : (100 * q.apr).toFixed(1) + "%"}</td>
+          <td>${fmtD(q.funds_on)}</td><td>${tag}<div class="sub">${esc(q.verdict)}</div></td></tr>`;
+      }).join("") + "</tbody></table>";
+  }
+
+  function renderGuardrails() {
+    const st = S.settings;
+    $("buffer").value = String(Math.round(st.buffer));
+    $("buffer").disabled = api.mode === "static";
+    $("buffer-hint").textContent = api.mode === "static" ? "Re-optimising for a new buffer needs the full app." : "Changing it re-scores the plan's risk.";
+    $("autolimit").value = String(Math.round(st.auto_cost_limit));
+    const t = S.policy.tiers;
+    const rows = [
+      ["read", "Forecasts, analysis, what-ifs", "Automatic"],
+      ["notify", `Reminders to existing contacts (max ${t.notify.max_per_day}/day)`, "Automatic"],
+      ["protect", "Reversible holds on suspected duplicate bills", "Automatic"],
+      ["commit", "Discounts, split payments, rescheduling", "Your approval"],
+      ["borrow", `Financing up to ${money(t.borrow.max_amount)}, APR under ${Math.round(100 * t.borrow.max_apr)}%`, "Approval + PIN"],
+      ["move money", `Payments to verified payees, ${money(t.move_money.daily_limit)}/day`, "Approval + PIN"],
+      ["forbidden", "New payees, bank-detail changes, policy edits, touching payroll/tax/rent/loan", "Never"],
+    ];
+    $("tiers").innerHTML = rows.map((r) => `<div class="tier-row"><b>${r[0]}</b><span>${r[1]} · <span class="${r[2] === "Never" ? "neg" : "muted"}">${r[2]}</span></span></div>`).join("");
+  }
+
+  function renderAlerts() {
+    $("alerts").innerHTML = S.alerts.map((a) => `<div class="alert" data-sev="${a.severity}"><span class="stripe"></span><div><p><b>${esc(a.title)}</b></p><p class="d">${esc(a.detail)}</p></div></div>`).join("");
+  }
+
+  function renderAudit() {
+    const v = S.audit.verify;
+    const cs = $("chain-status");
+    if (v) { cs.className = "tag " + (v.ok ? "ok" : "bad"); cs.textContent = v.ok ? `Intact · ${v.checked} entries` : `Broken at entry ${v.first_bad_seq}`; }
+    const items = S.audit.entries.slice().reverse().slice(0, 70);
+    $("log").innerHTML = items.map((e) => {
+      const d = e.data || {};
+      const what = d.action ? d.action.title : d.title || d.name || d.action_id || (d.reasons ? d.reasons.join(" ") : "") || d.business || "";
+      return `<li><span class="seq">${esc(e.seq)}</span><div><span class="ev">${esc(e.event)}</span> <span class="muted">· ${esc(e.actor)}</span><p>${esc(String(what).slice(0, 140))}</p><span class="h">${esc(String(e.hash).slice(0, 16))}…</span></div></li>`;
+    }).join("");
+  }
+
+  function renderTab() {
+    document.querySelectorAll(".tab").forEach((t) => t.setAttribute("aria-selected", String(t.dataset.tab === tab)));
+    const body = $("tab-body");
+    const a = S.analysis;
+    if (tab === "health") {
+      const t12 = a.trailing_12m, wc = a.working_capital, bm = a.benchmarks || {};
+      const k = (label, v, sub) => `<div class="kpi"><span class="eyebrow">${label}</span><span class="v">${v}</span><span class="s">${sub || ""}</span></div>`;
+      const months = a.monthly;
+      const mx = Math.max(...months.map((m) => m.revenue)) || 1;
+      const W = 760, H = 170, L = 50, B = 26, T = 10, bw = (W - L - 10) / months.length;
+      let svg = "";
+      for (let v = 0; v <= mx; v += Math.max(20000, Math.ceil(mx / 4 / 10000) * 10000)) {
+        const yy = T + (1 - v / mx) * (H - T - B);
+        svg += `<line class="grid" x1="${L}" x2="${W - 10}" y1="${yy}" y2="${yy}"/><text class="tick" x="${L - 6}" y="${yy + 4}" text-anchor="end">${kmoney(v)}</text>`;
+      }
+      months.forEach((m, i) => {
+        const h = (m.revenue / mx) * (H - T - B);
+        svg += `<rect class="bar" x="${L + i * bw + 4}" y="${H - B - h}" width="${bw - 8}" height="${h}" rx="2"><title>${m.month}: ${money(m.revenue)}, gross margin ${Math.round(100 * (m.gross_margin || 0))}%</title></rect>`;
+        svg += `<text class="tick" x="${L + i * bw + bw / 2}" y="${H - 8}" text-anchor="middle">${MON[Number(m.month.slice(5)) - 1]}</text>`;
+      });
+      body.innerHTML = `<div class="kpis">
+          ${k("Revenue, 12 months", money(t12.revenue), `card ${money(t12.card_sales)} · invoiced ${money(t12.credit_sales)}`)}
+          ${k("Gross margin", Math.round(100 * t12.gross_margin) + "%", bm.gross_margin ? `typical ${Math.round(100 * bm.gross_margin[0])}–${Math.round(100 * bm.gross_margin[1])}%` : "")}
+          ${k("Operating margin", (100 * t12.ebitda_margin).toFixed(1) + "%", bm.ebitda_margin ? `typical ${Math.round(100 * bm.ebitda_margin[0])}–${Math.round(100 * bm.ebitda_margin[1])}%` : "")}
+          ${k("Debt service coverage", a.dscr == null ? "no debt" : a.dscr.toFixed(2) + "x", "lenders look for 1.25x+")}
+          ${k("Days to get paid (DSO)", Math.round(wc.dso_days) + " days", bm.dso ? `typical ${bm.dso[0]}–${bm.dso[1]}` : "")}
+          ${k("Days to pay suppliers (DPO)", Math.round(wc.dpo_days) + " days", "incl. holiday stock order")}
+          ${k("Cash on hand", Math.round(wc.cash_days_on_hand) + " days", "of average spending")}
+          ${k("Largest customer", Math.round(100 * a.concentration.top_customer_share_of_revenue) + "%", "of revenue")}
+        </div>
+        <div><span class="eyebrow">Monthly revenue</span><svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="Monthly revenue bar chart">${svg}</svg></div>
+        <div class="table-wrap"><table><thead><tr><th>Customer</th><th class="r">Share of invoices</th><th>Terms</th><th>Usually pays</th><th class="r">On time</th><th class="r">Overdue now</th></tr></thead><tbody>
+          ${a.customers.map((c) => { const dm = S.delay_model[c.customer_id] || {}; return `<tr><td>${esc(c.name)}</td><td class="r num">${Math.round(100 * c.share_of_credit_sales)}%</td><td>Net ${c.terms_days}</td>
+            <td>${dm.median_days_late == null ? "–" : `${Math.round(dm.median_days_late)} days late <span class="sub">(1 in 10: ${Math.round(dm.p90_days_late)}+)</span>`}</td>
+            <td class="r num">${c.on_time_rate == null ? "–" : Math.round(100 * c.on_time_rate) + "%"}</td><td class="r num">${money(c.overdue_amount)}</td></tr>`; }).join("")}
+        </tbody></table></div>
+        <p class="hint">Payment timing is learned per customer with a Kaplan–Meier survival model that counts still-unpaid invoices, then blended with the portfolio average when a customer has little history. Benchmarks are illustrative ranges.</p>`;
+    } else if (tab === "ar") {
+      body.innerHTML = `<div class="table-wrap"><table><thead><tr><th>Invoice</th><th>Customer</th><th class="r">Amount</th><th>Due</th><th>Dorsal expects</th><th></th></tr></thead><tbody>` +
+        S.invoices.map((i) => `<tr><td class="num">${esc(i.id)}</td><td>${esc(i.customer)}</td><td class="r num">${money(i.amount)}</td><td>${fmtD(i.due)}</td><td>${fmtD(i.expected)} <span class="sub">(median)</span></td>
+          <td>${i.days_overdue > 60 ? '<span class="tag bad">At risk</span>' : i.days_overdue > 0 ? `<span class="tag warn">${i.days_overdue}d overdue</span>` : ""} ${i.reminded ? '<span class="tag ok">Reminded</span>' : ""} ${i.offer ? '<span class="tag ok">Discount offered</span>' : ""}</td></tr>`).join("") + "</tbody></table></div>";
+    } else if (tab === "ap") {
+      body.innerHTML = `<div class="table-wrap"><table><thead><tr><th>Payee</th><th class="r">Amount</th><th>Due</th><th>Scheduled</th><th></th></tr></thead><tbody>` +
+        S.recurring.map((r) => `<tr><td>${esc(r.name)}<div class="sub">${esc(r.kind)}</div></td><td class="r num">${money(r.amount)}</td><td>${esc(r.kind)}</td><td>–</td><td>${r.protected ? '<span class="tag mute">Protected</span>' : ""}</td></tr>`).join("") +
+        S.bills.map((b) => `<tr><td>${esc(b.vendor)}<div class="sub">${esc(b.reference)}</div></td><td class="r num">${money(b.amount)}</td><td>${fmtD(b.due)}</td>
+          <td>${b.held ? "On hold" : b.schedule.length ? b.schedule.map(([d, a]) => `${money(a)} on ${fmtD(d)}`).join("<br>") : fmtD(b.due)}</td>
+          <td>${b.protected ? '<span class="tag mute">Protected</span>' : b.held ? '<span class="tag ok">Held: duplicate</span>' : b.schedule.length ? '<span class="tag ok">Rescheduled</span>' : b.discretionary ? '<span class="tag warn">Discretionary</span>' : ""}</td></tr>`).join("") + "</tbody></table></div>";
+    } else if (tab === "inbox") {
+      body.innerHTML = `<div class="steps">` + S.inbox.map((m) => `<div class="mail" data-flag="${m.flagged}"><div class="step-top"><h3>${esc(m.subject)}</h3>${m.flagged ? '<span class="tag bad">Blocked: suspicious</span>' : '<span class="tag mute">Known sender</span>'}</div>
+        <span class="sub muted">From ${esc(m.from)} · ${fmtD(m.received)}${m.sender.lookalike_of ? ` · imitates <b>${esc(m.sender.lookalike_of)}</b>` : ""}</span>
+        <pre>${esc(m.body)}</pre>${m.risk.signals.length ? `<span class="hint">Signals: ${esc(m.risk.signals.join(", "))} (risk ${m.risk.score})</span>` : ""}</div>`).join("") + "</div>" +
+        `<p class="hint">Email bodies reach the language model only inside an "untrusted data" fence, with account numbers masked. Even a fully hijacked model can only propose, and paying a new payee is always refused.</p>`;
+    } else {
+      body.innerHTML = S.outbox.length ? `<div class="steps">` + S.outbox.slice().reverse().map((m) => `<div class="mail"><h3>${esc(m.subject)}</h3><span class="sub muted">To ${esc(m.to)} · sandbox email</span><pre>${esc(m.body)}</pre></div>`).join("") + "</div>" : `<p class="muted">Nothing sent yet.</p>`;
+    }
+  }
+
+  // ------------------------------------------------------------------ actions
+  async function run(fn, msg) {
+    try { S = await fn(); render(); if (msg) toast(msg); }
+    catch (e) { toast(e.message || "Something went wrong"); }
+  }
+  let pinFor = null;
+  function approve(s) {
+    if (s.step_up) {
+      pinFor = s; $("pin-what").textContent = s.title; $("pin").value = ""; $("pin-err").hidden = true; $("pin-modal").hidden = false; $("pin").focus();
+    } else run(() => api.approve(s.id, null), "Approved. " + (s.type === "draw_financing" ? "Draw scheduled in the sandbox." : "Sent from the sandbox outbox."));
+  }
+  $("pin-form").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    try { S = await api.approve(pinFor.id, $("pin").value); $("pin-modal").hidden = true; render(); toast("Approved with PIN. Signed approval recorded in the audit log."); }
+    catch (err) { const pe = $("pin-err"); pe.textContent = err.message; pe.hidden = false; }
+  });
+  $("pin-cancel").addEventListener("click", () => ($("pin-modal").hidden = true));
+  $("buffer").addEventListener("change", (e) => run(() => api.settings({ buffer: Number(e.target.value) }), "Buffer updated."));
+  $("autolimit").addEventListener("change", (e) => run(() => api.settings({ auto_cost_limit: Number(e.target.value) }), "Limit updated. Steps now within it ran automatically."));
+  $("pause").addEventListener("click", () => run(() => api.settings({ paused: !S.settings.paused }), S && S.settings.paused ? "Dorsal resumed." : "Dorsal paused."));
+  $("verify").addEventListener("click", async () => {
+    try { const v = await api.verify(); S.audit.verify = v; renderAudit(); toast(v.ok ? `Chain intact: ${v.checked} entries verified.` : `Chain broken at entry ${v.first_bad_seq}.`); }
+    catch (e) { toast(e.message); }
+  });
+  $("attack").addEventListener("click", async () => {
+    try {
+      const r = await api.attack();
+      S = r.state; render();
+      $("attack-out").innerHTML = `<span class="eyebrow">A hijacked model tried ${r.attempts.length} things</span>` + r.attempts.map((a) =>
+        `<div class="attack-row"><span class="x" aria-hidden="true">×</span><p>${esc(a.title)}<br><span class="muted">${esc(a.status)}: ${esc(a.reasons.join(" "))}</span></p></div>`).join("");
+      toast(`${r.attempts.filter((a) => a.status === "denied").length} of ${r.attempts.length} attempts refused.`);
+    } catch (e) { toast(e.message); }
+  });
+  document.querySelectorAll(".tab").forEach((t) => t.addEventListener("click", () => { tab = t.dataset.tab; renderTab(); }));
+
+  // chat
+  const chatLog = $("chat-log");
+  const bubble = (cls, text) => { const d = document.createElement("div"); d.className = "msg " + cls; d.textContent = text; chatLog.appendChild(d); chatLog.scrollTop = chatLog.scrollHeight; return d; };
+  bubble("note", "Ask a question, or tap a suggestion.");
+  async function ask(q) {
+    if (!q.trim()) return;
+    bubble("user", q);
+    const out = bubble("bot", "Thinking…");
+    $("chat-send").disabled = true;
+    try { out.textContent = await api.chat(q); } catch (e) { out.textContent = "Dorsal couldn't answer that: " + (e.message || e.code || "error"); }
+    $("chat-send").disabled = false;
+  }
+  $("chat-form").addEventListener("submit", (e) => { e.preventDefault(); const q = $("chat-input").value; $("chat-input").value = ""; ask(q); });
+  document.querySelectorAll("#suggest .chip").forEach((c) => c.addEventListener("click", () => ask(c.textContent)));
+
+  (async () => {
+    try { S = await api.review(); render(); }
+    catch (e) { $("briefing").innerHTML = `<p class="neg">Could not reach the Dorsal server: ${esc(e.message)}. Start it with <span class="num">python -m dorsal serve</span>.</p>`; }
+  })();
+})();
+</script>
+</body>
+</html>
