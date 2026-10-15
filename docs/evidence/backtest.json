@@ -1,0 +1,166 @@
+{
+  "rows": [
+    {
+      "business": "Harbor Lane (demo)",
+      "n_checkpoints": 91,
+      "origins": 7,
+      "coverage_p10_p90": 0.758,
+      "mae_median": 4555.0,
+      "mae_naive": 19540.0,
+      "skill_vs_naive": 0.767,
+      "mae_in_weeks_of_flow": 0.276
+    },
+    {
+      "business": "coffee_roaster #0",
+      "n_checkpoints": 91,
+      "origins": 7,
+      "coverage_p10_p90": 0.769,
+      "mae_median": 4240.0,
+      "mae_naive": 18131.0,
+      "skill_vs_naive": 0.766,
+      "mae_in_weeks_of_flow": 0.373
+    },
+    {
+      "business": "coffee_roaster #1",
+      "n_checkpoints": 91,
+      "origins": 7,
+      "coverage_p10_p90": 0.747,
+      "mae_median": 5272.0,
+      "mae_naive": 15966.0,
+      "skill_vs_naive": 0.67,
+      "mae_in_weeks_of_flow": 0.466
+    },
+    {
+      "business": "coffee_roaster #2",
+      "n_checkpoints": 91,
+      "origins": 7,
+      "coverage_p10_p90": 0.945,
+      "mae_median": 5214.0,
+      "mae_naive": 15306.0,
+      "skill_vs_naive": 0.659,
+      "mae_in_weeks_of_flow": 0.265
+    },
+    {
+      "business": "restaurant #0",
+      "n_checkpoints": 91,
+      "origins": 7,
+      "coverage_p10_p90": 0.901,
+      "mae_median": 3796.0,
+      "mae_naive": 7884.0,
+      "skill_vs_naive": 0.518,
+      "mae_in_weeks_of_flow": 0.199
+    },
+    {
+      "business": "restaurant #1",
+      "n_checkpoints": 91,
+      "origins": 7,
+      "coverage_p10_p90": 0.582,
+      "mae_median": 7338.0,
+      "mae_naive": 12436.0,
+      "skill_vs_naive": 0.41,
+      "mae_in_weeks_of_flow": 0.378
+    },
+    {
+      "business": "restaurant #2",
+      "n_checkpoints": 91,
+      "origins": 7,
+      "coverage_p10_p90": 0.692,
+      "mae_median": 9164.0,
+      "mae_naive": 17027.0,
+      "skill_vs_naive": 0.462,
+      "mae_in_weeks_of_flow": 0.278
+    },
+    {
+      "business": "distributor #0",
+      "n_checkpoints": 91,
+      "origins": 7,
+      "coverage_p10_p90": 0.868,
+      "mae_median": 12026.0,
+      "mae_naive": 29103.0,
+      "skill_vs_naive": 0.587,
+      "mae_in_weeks_of_flow": 0.401
+    },
+    {
+      "business": "distributor #1",
+      "n_checkpoints": 91,
+      "origins": 7,
+      "coverage_p10_p90": 0.714,
+      "mae_median": 23603.0,
+      "mae_naive": 46083.0,
+      "skill_vs_naive": 0.488,
+      "mae_in_weeks_of_flow": 0.925
+    },
+    {
+      "business": "distributor #2",
+      "n_checkpoints": 91,
+      "origins": 7,
+      "coverage_p10_p90": 0.846,
+      "mae_median": 16907.0,
+      "mae_naive": 46728.0,
+      "skill_vs_naive": 0.638,
+      "mae_in_weeks_of_flow": 0.394
+    },
+    {
+      "business": "agency #0",
+      "n_checkpoints": 91,
+      "origins": 7,
+      "coverage_p10_p90": 0.813,
+      "mae_median": 9059.0,
+      "mae_naive": 26595.0,
+      "skill_vs_naive": 0.659,
+      "mae_in_weeks_of_flow": 0.346
+    },
+    {
+      "business": "agency #1",
+      "n_checkpoints": 91,
+      "origins": 7,
+      "coverage_p10_p90": 0.714,
+      "mae_median": 10605.0,
+      "mae_naive": 27967.0,
+      "skill_vs_naive": 0.621,
+      "mae_in_weeks_of_flow": 0.489
+    },
+    {
+      "business": "agency #2",
+      "n_checkpoints": 91,
+      "origins": 7,
+      "coverage_p10_p90": 0.868,
+      "mae_median": 15268.0,
+      "mae_naive": 41972.0,
+      "skill_vs_naive": 0.636,
+      "mae_in_weeks_of_flow": 0.375
+    },
+    {
+      "business": "ecommerce #0",
+      "n_checkpoints": 91,
+      "origins": 7,
+      "coverage_p10_p90": 1.0,
+      "mae_median": 1827.0,
+      "mae_naive": 9581.0,
+      "skill_vs_naive": 0.809,
+      "mae_in_weeks_of_flow": 0.126
+    },
+    {
+      "business": "ecommerce #1",
+      "n_checkpoints": 91,
+      "origins": 7,
+      "coverage_p10_p90": 0.934,
+      "mae_median": 2935.0,
+      "mae_naive": 10074.0,
+      "skill_vs_naive": 0.709,
+      "mae_in_weeks_of_flow": 0.178
+    },
+    {
+      "business": "ecommerce #2",
+      "n_checkpoints": 91,
+      "origins": 7,
+      "coverage_p10_p90": 0.725,
+      "mae_median": 7259.0,
+      "mae_naive": 18790.0,
+      "skill_vs_naive": 0.614,
+      "mae_in_weeks_of_flow": 0.273
+    }
+  ],
+  "mean_coverage": 0.80475,
+  "mean_skill": 0.6258125
+}
