@@ -23,13 +23,10 @@ are enforced by deterministic code the AI cannot change.
 | **Security** | 7 permission tiers, signed single-use approvals bound to the exact action, PIN step-up, hash-chained audit log, injection fencing, kill switch; **20/20 red-team attacks stopped** |
 | **Evaluation** | On 200 synthetic businesses, Dorsal cut the share that ran out of cash from **29% to 4%** (prevented 86% of shortfalls; a naive rule prevented 10%) |
 
-## How this project was built
+## Development
 
-The initial implementation of Dorsal was generated with an AI coding assistant on 12 October 2026, following the
-problem definition, product direction, requirements and brand set by Team Dorsal. AI-assisted development has been
-confirmed as permitted by the organizers. From 12 to 14 October 2026 the code was reviewed, tested and integrated
-module by module through pull requests with automatic test checks; problems found along the way and how they were
-fixed are recorded in [`docs/ENGINEERING_NOTES.md`](docs/ENGINEERING_NOTES.md).
+Dorsal was integrated module by module through pull requests with automatic test checks. Problems found
+along the way, and how they were fixed, are recorded in [`docs/ENGINEERING_NOTES.md`](docs/ENGINEERING_NOTES.md).
 
 All businesses, people and lenders in this repository are fictional. Bank, email and lender connections are sandboxed.
 
